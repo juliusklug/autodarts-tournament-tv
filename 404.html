@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#090c12">
+  <meta name="description" content="Live-Zuschaueransicht für AutoDarts Tournament Companion">
+  <title>AutoDarts Tournament TV</title>
+  <style>
+    :root{
+      color-scheme:dark;
+      font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      --bg:#090c12; --panel:rgba(255,255,255,.055); --line:rgba(255,255,255,.10);
+      --muted:rgba(255,255,255,.58); --soft:rgba(255,255,255,.035);
+      --radius:22px;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;min-height:100%;background:
+      radial-gradient(circle at 50% -10%,#273047 0,#121722 34%,#090c12 100%);
+      color:#f5f7fb}
+    body{min-height:100vh}
+    button,input{font:inherit}
+    .shell{width:min(1500px,94vw);margin:auto;padding:30px 0 24px}
+    header{display:flex;justify-content:space-between;align-items:center;gap:24px;margin-bottom:24px}
+    .eyebrow{font-size:13px;letter-spacing:.16em;text-transform:uppercase;opacity:.55;font-weight:800}
+    h1{font-size:clamp(36px,5vw,76px);line-height:.95;margin:7px 0}
+    h2{font-size:26px;margin:0 0 14px}
+    .code{font:700 18px ui-monospace,SFMono-Regular,Menlo,monospace;opacity:.62}
+    .logo{font-size:clamp(50px,7vw,90px)}
+    .card{border:1px solid var(--line);background:var(--panel);border-radius:var(--radius);
+      padding:24px;box-shadow:0 20px 70px rgba(0,0,0,.18);backdrop-filter:blur(10px)}
+    .hero{text-align:center;margin-bottom:24px}
+    .hero .label{letter-spacing:.16em;font-size:13px;font-weight:800;opacity:.5}
+    .versus{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:24px;margin:16px 0 8px}
+    .versus strong{font-size:clamp(32px,5vw,72px);line-height:1}
+    .versus strong:first-child{text-align:right}.versus strong:last-child{text-align:left}
+    .versus span{font-size:clamp(18px,2vw,28px);font-weight:900;opacity:.3}
+    .format{font-size:clamp(15px,1.5vw,22px);opacity:.62}
+    .autodarts-badge{display:inline-flex;align-items:center;gap:8px;padding:7px 11px;border-radius:999px;background:rgba(74,222,128,.10);border:1px solid rgba(74,222,128,.25);font-size:12px;font-weight:900;letter-spacing:.12em;margin-bottom:12px}
+    .live-score{display:grid;grid-template-columns:1fr auto 1fr;align-items:end;gap:28px;margin:8px 0 12px}
+    .live-player{text-align:center}.live-player .name{font-size:clamp(24px,3vw,46px);font-weight:850;opacity:.92}
+    .remaining{font-size:clamp(64px,9vw,132px);font-weight:950;line-height:.9;letter-spacing:-.05em}
+    .score-vs{font-size:clamp(18px,2vw,28px);font-weight:900;opacity:.26;padding-bottom:22px}
+    .legline{font-size:clamp(17px,1.6vw,24px);font-weight:800;opacity:.72}
+    .grid{display:grid;grid-template-columns:.9fr 1.1fr;gap:24px}
+    table{width:100%;border-collapse:collapse;font-size:clamp(15px,1.3vw,21px)}
+    th,td{padding:10px 8px;border-bottom:1px solid rgba(255,255,255,.075);text-align:right}
+    th:nth-child(2),td:nth-child(2){text-align:left}
+    tr.qualify{background:rgba(255,255,255,.055)}
+    .round{margin:0 0 18px}.round h3{margin:0 0 8px;opacity:.6;font-size:16px;text-transform:uppercase;letter-spacing:.08em}
+    .match{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;padding:10px 12px;margin:6px 0;border-radius:12px;background:rgba(255,255,255,.045)}
+    .match span:first-child{text-align:right}.match span:last-child{text-align:left}.match b{opacity:.55}
+    .champ{display:grid;place-items:center;text-align:center;min-height:250px;margin-bottom:24px}
+    .champ .trophy{font-size:86px;line-height:1}.champ strong{font-size:clamp(44px,7vw,96px);line-height:1;margin-top:8px}
+    .empty{min-height:150px;display:grid;place-items:center;text-align:center;opacity:.5;border:1px dashed rgba(255,255,255,.14);border-radius:16px;padding:20px}
+    .join{max-width:620px;margin:11vh auto 0;text-align:center}
+    .join h1{font-size:48px}
+    .join form{display:grid;grid-template-columns:1fr auto;gap:10px;margin-top:24px}
+    .join input{min-width:0;padding:15px 17px;border-radius:12px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);color:white;text-transform:uppercase}
+    .join button{border:0;border-radius:12px;padding:0 20px;font-weight:800;cursor:pointer}
+    .status{text-align:center;opacity:.58;margin-top:14px;min-height:22px}
+    .live{display:inline-flex;align-items:center;gap:8px;margin-top:8px;font-size:13px;opacity:.6}
+    .dot{width:9px;height:9px;border-radius:50%;background:#4ade80;box-shadow:0 0 12px #4ade80}
+    footer{display:flex;justify-content:space-between;gap:20px;margin-top:18px;font-size:13px;opacity:.42}
+    @media(max-width:900px){
+      .grid{grid-template-columns:1fr}.shell{width:min(96vw,760px);padding-top:18px}.versus{gap:12px}
+      .card{border-radius:18px;padding:16px}.join{margin-top:8vh}.join form{grid-template-columns:1fr}
+      .join button{padding:14px 18px}
+    }
+  </style>
+</head>
+<body>
+<div id="app"></div>
+
+<script type="module">
+  import { createClient } from "https://esm.sh/@supabase/supabase-js@2.95.0";
+
+  const SUPABASE_URL = "https://vitejphsnbejhyydvkqc.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_-7f4XSQrfOzRl3wI9PIZoQ_ySkSpAoI";
+  const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  const app = document.querySelector("#app");
+  const qs = new URLSearchParams(location.search);
+  let code = (qs.get("code") || "").trim().toUpperCase();
+  let channel = null;
+
+  const esc = v => String(v ?? "").replace(/[&<>"']/g, c => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+  }[c]));
+
+  function joinScreen(message = "") {
+    app.innerHTML = `
+      <main class="shell join">
+        <div class="logo">🎯</div>
+        <div class="eyebrow">AutoDarts Tournament TV</div>
+        <h1>Turnier ansehen</h1>
+        <p style="opacity:.65">Gib den TV-Code aus dem Tournament Companion ein.</p>
+        <form id="joinForm">
+          <input id="codeInput" placeholder="DART-XXXXXX" autocomplete="off" autocapitalize="characters" spellcheck="false">
+          <button>Öffnen</button>
+        </form>
+        <div class="status">${esc(message)}</div>
+      </main>`;
+
+    document.querySelector("#joinForm").addEventListener("submit", e => {
+      e.preventDefault();
+      const value = document.querySelector("#codeInput").value.trim().toUpperCase();
+      if (!value) return;
+      const url = new URL(location.href);
+      url.search = "";
+      url.searchParams.set("code", value);
+      location.href = url.toString();
+    });
+  }
+
+  function renderSession(row) {
+    const p = row.payload || {};
+    const current = p.currentMatch || null;
+    const next = p.nextMatch || null;
+    const liveMatch = p.liveMatch || null;
+    const standings = Array.isArray(p.standings) ? p.standings : [];
+    const knockout = Array.isArray(p.knockout) ? p.knockout : [];
+    const rounds = [...new Set(knockout.map(m => m.stage).filter(Boolean))];
+    const champion = p.championName || "";
+
+    app.innerHTML = `
+      <main class="shell">
+        <header>
+          <div>
+            <div class="eyebrow">${esc(p.modeLabel || "Turnier")}</div>
+            <h1>${esc(row.title || p.tournamentName || "Darts Night")}</h1>
+            <div class="code">${esc(row.code)}</div>
+            <div class="live"><span class="dot"></span>Live verbunden</div>
+          </div>
+          <div class="logo">🎯</div>
+        </header>
+
+        ${champion ? `
+          <section class="card champ">
+            <div class="eyebrow">Turniersieger</div>
+            <div class="trophy">🏆</div>
+            <strong>${esc(champion)}</strong>
+          </section>
+        ` : `
+          <section class="card hero">
+            ${liveMatch?.recognized ? `
+              <div class="autodarts-badge">● AUTODARTS LIVE</div>
+              <div class="live-score">
+                <div class="live-player">
+                  <div class="name">${esc(liveMatch.playerA || current?.playerA || "")}</div>
+                  <div class="remaining">${liveMatch.remainingA ?? "–"}</div>
+                </div>
+                <div class="score-vs">VS</div>
+                <div class="live-player">
+                  <div class="name">${esc(liveMatch.playerB || current?.playerB || "")}</div>
+                  <div class="remaining">${liveMatch.remainingB ?? "–"}</div>
+                </div>
+              </div>
+              <div class="legline">
+                Legs ${liveMatch.legsA ?? 0} : ${liveMatch.legsB ?? 0}
+                ${(liveMatch.setsA != null || liveMatch.setsB != null) ? ` · Sets ${liveMatch.setsA ?? 0} : ${liveMatch.setsB ?? 0}` : ""}
+              </div>
+              <div class="format">${esc(current?.format || "")}</div>
+            ` : `
+              <div class="label">${current?.status === "playing" ? "AKTUELLES MATCH" : "NÄCHSTES MATCH"}</div>
+              ${current ? `
+                <div class="versus">
+                  <strong>${esc(current.playerA)}</strong>
+                  <span>VS</span>
+                  <strong>${esc(current.playerB)}</strong>
+                </div>
+                <div class="format">${esc(current.format || "")}</div>
+              ` : `<div class="empty">Noch kein Match geplant.</div>`}
+            `}
+            ${next && current && next.id !== current.id ? `
+              <div style="margin-top:18px;opacity:.55">Danach: <b>${esc(next.playerA)} vs. ${esc(next.playerB)}</b></div>
+            ` : ""}
+          </section>
+        `}
+
+        <div class="grid">
+          <section class="card">
+            <h2>Tabelle</h2>
+            ${standings.length ? `
+              <table>
+                <thead><tr><th>#</th><th>Spieler</th><th>SP</th><th>S</th><th>LD</th><th>P</th></tr></thead>
+                <tbody>
+                  ${standings.map((r,i)=>`
+                    <tr class="${r.qualifies ? "qualify" : ""}">
+                      <td>${i+1}</td><td>${esc(r.name)}</td><td>${r.played ?? 0}</td><td>${r.wins ?? 0}</td>
+                      <td>${Number(r.legDiff)>0?"+":""}${r.legDiff ?? 0}</td><td>${r.points ?? 0}</td>
+                    </tr>`).join("")}
+                </tbody>
+              </table>
+            ` : `<div class="empty">Bei direktem KO gibt es keine Vorrundentabelle.</div>`}
+          </section>
+
+          <section class="card">
+            <h2>Turnierbaum</h2>
+            ${knockout.length ? rounds.map(round => `
+              <div class="round">
+                <h3>${esc(round)}</h3>
+                ${knockout.filter(m=>m.stage===round).map(m=>`
+                  <div class="match">
+                    <span>${esc(m.playerA)}</span>
+                    <b>${m.status==="finished" ? esc(m.score || "") : "vs."}</b>
+                    <span>${esc(m.playerB)}</span>
+                  </div>`).join("")}
+              </div>`).join("") : `<div class="empty">Finalrunde noch nicht gestartet.</div>`}
+          </section>
+        </div>
+
+        <footer>
+          <span>AutoDarts Tournament TV</span>
+          <span>Aktualisiert: ${new Date(row.updated_at).toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit",second:"2-digit"})}</span>
+        </footer>
+      </main>`;
+  }
+
+  async function load() {
+    if (!code) return joinScreen();
+
+    const { data, error } = await supabase
+      .from("tournament_tv_sessions")
+      .select("id,code,title,payload,updated_at,expires_at")
+      .eq("code", code)
+      .maybeSingle();
+
+    if (error || !data) {
+      return joinScreen("Turniercode nicht gefunden oder abgelaufen.");
+    }
+
+    renderSession(data);
+
+    channel = supabase
+      .channel("tv:" + code)
+      .on("postgres_changes", {
+        event: "UPDATE",
+        schema: "public",
+        table: "tournament_tv_sessions",
+        filter: "code=eq." + code
+      }, payload => renderSession(payload.new))
+      .subscribe();
+  }
+
+  addEventListener("beforeunload", () => {
+    if (channel) supabase.removeChannel(channel);
+  });
+
+  load();
+</script>
+</body>
+</html>
